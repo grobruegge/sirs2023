@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <span class="title">
+        <h1>{% block title %} {{ restaurant.name }} {% endblock %}</h1>
+    </span>
+    <div class="content">
+        <div class="restaurant">
+            <p><b>#{{ restaurant.id }}</b></p>
+            <b>
+                <p class="name"> {{ restaurant.name }} </p>
+            </b>
+            <p>{{ restaurant.category }}</p>
+            <p>{{ restaurant.location }} </p>
+            <p>Added: {{ restaurant.created_at }}</p>
+            <div class="description">
+                <h4>Description</h4>
+                <p>{{ restaurant.description }}</p>
+            </div>
+
+            <p><h2>Book a Table</h2></p>
+        
+            <div class="">
+                <form action="/{{ restaurant.id }}" method="get">
+                    <label for="date">Date:</label>
+                    <input type="date" name="date" value="{{ date }}">
+                    <input type="submit" value="Show Available Tables">
+                </form>
+            </div>
+        
+            {% if tables %}
+            <p><h2>Available Tables</h2></p>
+            <div>
+                <form action="/{{ restaurant.id }}" method="post">
+                    <table>
+                        <tr>
+                            <th>Size</th>
+                            <th>Select</th>
+                        </tr>
+                        {% for table in tables %}
+                        <tr>
+                            <td>{{ table.size }}</td>
+                            <td><input type="radio" name="table_id" value="{{ table.id }}"></td>
+                        </tr>
+                        {% endfor %}    
+                    </table>
+                    <input type="hidden" name="date" value="{{ date }}">
+                    <input type="submit" value="Book Table">
+                </form>
+            </div>
+            {% endif %}
+        
+        </div>
+    </div>
+
+{% endblock %}

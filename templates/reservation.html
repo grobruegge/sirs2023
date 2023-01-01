@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 style="width: 100%">{% block title %} Add a New Reservation {% endblock %}</h1>
+    <form method="post">
+        <p>
+            <label for="name">You are reserving a table from:
+                <br>
+                INSERT MAPPING HERE
+            </br>
+            </label>
+        </p>
+        <p>
+            <label for="name">Please enter your name:</label>
+            <input type="text" name="name">
+            </input>
+        </p>
+
+        <p>
+            <label for="email">Please enter your email address:</label>
+            <input type="text" name="email">
+            </input>
+        </p>
+
+        <p>
+            <label for="people">Please enter the number of guests:</label>
+            <input type="text" name="people"
+                   placeholder="2">
+            </input>
+        </p>
+
+        <p>
+            <label for="date">Please enter your date:</label>
+            <input type="text" name="date">
+            </input>
+        </p>
+
+        <p>
+            <label for="time">Please enter your time:</label>
+            <input type="text" name="time">
+            </input>
+        </p>
+
+        <p>
+            <label for="giftcard">Please enter your giftcard code:</label>
+            <input type="text" name="giftcard">
+            </input>
+        </p>
+        <p>
+            <button type="submit">Submit</button>
+        </p>
+    </form>
+{% endblock %}

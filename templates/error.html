@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="error-container">
+    <div class="error-code">{{ status_code }}</div>
+    <div class="error-text">{{ error }}</div>
+    <button class="error-return-button" onclick="location.href='/'">Return to Homepage</button>
+  </div>
+
+{% endblock %}

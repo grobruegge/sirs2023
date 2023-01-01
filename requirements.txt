@@ -1,0 +1,7 @@
+Flask
+Flask-RESTful
+Flask-SQLAlchemy
+requests
+#mysql-connector-python
+flask_mysqldb
+flask-marshmallow

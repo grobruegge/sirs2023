@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="box">
+    <div class="form">
+        <div class="form-container">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-message">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+            {% endwith %}
+        
+            <form method="POST" action="/login">
+                
+                <input class="" name="username" placeholder="Your Username" autofocus="">
+
+                <input class="" type="password" name="password" placeholder="Your Password">
+
+                <button class="btn-login">Login</button>
+                <a href="#">Forgotten password?</a>
+            </form>
+            
+            <button class="btn-new" onclick="location.href='/signup'">Create new Account</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
