@@ -71,17 +71,16 @@ class UserModel(db.Model):
 class SessionModel(db.Model):
     __tablename__ = 'sessions'
     id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.Text(), unique=True)
+    token = db.Column(db.String(255), unique=True)
     challenge = db.Column(db.Text())
-    #username = db.Column(db.String(100)) 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = relationship('UserModel', backref='sessions')
 
-    def __init__(self, username=None, challenge=""):
+    def __init__(self, user_id=None, challenge=""):
         self.token = os.urandom(64).hex()
         self.challenge = challenge
-        self.username = username
+        self.user_id = user_id
 
     def __repr__(self):
-        return '<Session(id=%s, token=%s, challenge=%s, user=%s)>' % (self.id, self.token, self.challenge, self.username)
+        return '<Session(id=%s, token=%s, challenge=%s, user=%s)>' % (self.id, self.token, self.challenge, self.user_id)
 

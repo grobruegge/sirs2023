@@ -221,7 +221,8 @@ def book_table(restaurant_id):
             "tableID": tableID,
             "date": date,
         },
-        cookies=request.cookies
+        cookies=request.cookies,
+        verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
     )
 
     if post_response.status_code != 201:

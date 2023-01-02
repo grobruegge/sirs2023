@@ -5,3 +5,4 @@ requests
 #mysql-connector-python
 flask_mysqldb
 flask-marshmallow
+pycryptodome
