@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="page-bookings">
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+      <div class="info-message">
+          {{ messages[0] }}
+      </div>
+  {% endif %}
+  {% endwith %}
+
+  <h1>Bookings</h1>
+
+  <div class="table">
+    <table class="booking-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Table ID</th>
+          <th>Table Size</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+          <tr>
+            <td>{{ booking.date }}</td>
+            <td>{{ booking.user.username }}</td>
+            <td>{{ booking.table.id }}</td>
+            <td>{{ booking.table.size }}</td>
+            <td>
+            {% if booking.status != 'confirmed' %}
+            <form action="/manage" method="POST">
+              <input type="hidden" name="_method" value="post">
+              <input type="hidden" name="booking_id" value="{{ booking.id }}">
+              <input type="hidden" name="updated_status" value="confirmed">
+              <button type="submit">Confirm</button>
+            </form>
+            {% endif %}
+            {% if booking.status != 'declined' %}
+            <form action="/manage" method="POST">
+              <input type="hidden" name="booking_id" value="{{ booking.id }}">
+              <input type="hidden" name="updated_status" value="declined">
+              <button type="submit">Decline</button>
+            </form>
+            {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

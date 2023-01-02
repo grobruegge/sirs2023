@@ -161,9 +161,54 @@
     background-color: #444;
 }
 
+.page-bookings {
+    align-items: center;
+}
+
+.page-bookings h1 {
+    text-align: center;
+}
+
+.page-bookings .info-message {
+    width: 50%;
+    margin: 5px auto;
+    height: 50px;
+    line-height: 50px;
+    color: rgb(0, 0, 0);
+    text-align: center;
+    border-radius: 6px;
+    border: 3px solid rgb(0, 0, 0);
+}
+
+.booking-table {
+    margin: 20px 100px;
+    table-layout: fixed;
+    font-size: 24px;
+}
+
+.booking-table th {
+    width: 600px;
+    padding: 20px 10px;
+    background-color: rgb(177, 15, 15);
+    color: #fff;
+    font-weight: bold;
+}
+
+.booking-table td {
+    width: 600px;
+    height: 100px;
+    text-align: center;
+}
+
 nav a {
     color: #d64161;
-    font-size: 3em;
-    margin-left: 50px;
+    font-size: 2em;
+    margin-left: 15px;
     text-decoration: none;
+}
+
+
+
+.content .page-booking {
+    flex-direction: column;
 }

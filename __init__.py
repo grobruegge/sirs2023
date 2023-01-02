@@ -1,7 +1,7 @@
 import flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
-import os
+import os, hashlib, base64, datetime, traceback, logging
 print(f"Using Flask-Version {flask.__version__}")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -13,7 +13,8 @@ app = flask.Flask(__name__)
 @app.errorhandler(Exception)
 def handle_error(e):
     if app.debug:
-        return {'error': str(e)}, 500
+        print(traceback.format_exc())
+        return {'error': repr(e)}, 500
     else:
         return {'error': 'It seems like something went wrong. Please contact the admin.'}, 500
 
@@ -54,13 +55,6 @@ def create_app():
     
     api.init_app(app)
 
-    # Add examples to the database
-    new_user = models.UserModel(
-        username="arne", 
-        password="any_pwd",
-        salt="adsas123nf12"
-    )
-
     restaurants_example_1 = models.RestaurantModel(
         name='PizzaHut',
         category='Pizza',
@@ -73,6 +67,24 @@ def create_app():
         location='Porto',
         description='Very cozy place'
     )
+
+    salt = os.urandom(8)
+
+    pwd_digest = hashlib.pbkdf2_hmac(
+        hash_name='sha256', 
+        password="pwd".encode(),
+        salt=salt,
+        iterations=1000,
+    )
+
+    # Add examples to the database
+    new_user = models.UserModel(
+        username="arne", 
+        password=base64.b64encode(hashlib.sha256(pwd_digest).digest()).decode('utf-8'),
+        salt=base64.b64encode(salt).decode('utf-8'),
+        #restaurant=restaurants_example_2,
+    )
+
     table_ex_1 = models.TableModel(
         size=5,
         restaurant=restaurants_example_2,
@@ -80,6 +92,12 @@ def create_app():
     table_ex_2 = models.TableModel(
         size=6,
         restaurant=restaurants_example_2,
+    )
+
+    booking_ex_1 = models.BookingModel(
+        date=datetime.datetime.strptime("2023-01-05", "%Y-%m-%d"),
+        table=table_ex_1,
+        user=new_user,
     )
 
     #print(f'Restaurant: {table_ex_2.restaurant.name}')
@@ -92,6 +110,7 @@ def create_app():
     db.session.add(restaurants_example_2)
     db.session.add(table_ex_1)
     db.session.add(table_ex_2)
+    db.session.add(booking_ex_1)
     db.session.commit()
 
     return app

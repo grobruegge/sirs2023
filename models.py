@@ -1,6 +1,7 @@
 from . import db
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from sqlalchemy import false
 import os
 
 class RestaurantModel(db.Model):
@@ -52,6 +53,8 @@ class BookingModel(db.Model):
     table = relationship('TableModel', backref='bookings')
     user_id =  db.Column(db.Integer, db.ForeignKey('users.id'))
     user = relationship('UserModel', backref='bookings')
+    status = db.Column(db.String(20), default="pendning")
+
 
 class UserModel(db.Model):
     __tablename__ = 'users'
@@ -59,18 +62,20 @@ class UserModel(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     salt = db.Column(db.String(100), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'))
+    restaurant = relationship('RestaurantModel', backref='users')
 
     def __repr__(self):
         return f"User(id={self.id}, username={self.username}, password={self.password})"
 
 class SessionModel(db.Model):
-    """
-    Associates a session token with its respective user
-    """
+    __tablename__ = 'sessions'
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.Text(), unique=True)
     challenge = db.Column(db.Text())
-    username = db.Column(db.String(100)) 
+    #username = db.Column(db.String(100)) 
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = relationship('UserModel', backref='sessions')
 
     def __init__(self, username=None, challenge=""):
         self.token = os.urandom(64).hex()

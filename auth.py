@@ -71,13 +71,24 @@ def login_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
         current_session = get_current_session()
-        if not current_session or current_session.username is None:
+        if not current_session or current_session.user is None:
             flash("This action requires you to be logged in")
             return redirect(url_for('auth.login'))
         else:
             return func(*args, **kwargs)
     return decorated_function
 
+def restaurant_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        current_session = get_current_session()
+        #user = UserModel.query.filter_by(username=current_session.username).first()
+        if current_session.user.restaurant_id is None:
+            flash("This action exeeds your priveleges")
+            return redirect(url_for('auth.login'))
+        else:
+            return func(*args, **kwargs)
+    return decorated_function
 
 class LoginRessource(Resource):
     def __init__(self):
@@ -127,7 +138,7 @@ class LoginRessource(Resource):
 
         # Setup the session with the current user
         current_session.challenge = ""
-        current_session.username = user.username
+        current_session.user = user
         db.session.commit()
 
         return {"message": "Login successful"}, 200

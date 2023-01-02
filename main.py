@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_restful import Resource, reqparse
 from .models import RestaurantModel, BookingModel, TableModel, UserModel
-from .auth import get_current_session, login_required
+from .auth import get_current_session, login_required, restaurant_required
 from . import db, api
 import datetime, requests
 
@@ -59,6 +59,7 @@ class BookingRessource(Resource):
         self.parser = {
             'get' : reqparse.RequestParser(),
             'post': reqparse.RequestParser(),
+            'put': reqparse.RequestParser(),
         }
         self.init_parser()
 
@@ -67,8 +68,10 @@ class BookingRessource(Resource):
         self.parser['get'].add_argument('date', help='Please provide a date in this format: YYYY-MM-DD', type=str)
         self.parser['post'].add_argument('date', help='Please provide a date in this format: YYYY-MM-DD', type=str)
         self.parser['post'].add_argument('tableID', help='Table-ID of the reservation', type=int)
+        self.parser['put'].add_argument('bookingID', help='Booking-ID', type=int)
+        self.parser['put'].add_argument('updatedStatus', help='New Status of the booking', type=str)
 
-    def get(self):
+    def get(self): # get all free tables
         args = self.parser['get'].parse_args(strict=True)
 
         restaurants = RestaurantModel.query.filter_by(id=args["restaurantID"]).all()
@@ -90,12 +93,10 @@ class BookingRessource(Resource):
         return [table.to_dict() for table in tables], 200
 
     @login_required
-    def post(self):
+    def post(self): # Add new booking
         args = self.parser['post'].parse_args(strict=True)
 
         current_session = get_current_session()
-        temp = 'arne'
-        user = UserModel.query.filter_by(username=temp).first()
 
         table = TableModel.query.filter_by(id=args["tableID"]).first()
 
@@ -111,12 +112,51 @@ class BookingRessource(Resource):
             BookingModel(
                 date=date,
                 table=table,
-                user=user, 
+                user=current_session.user, 
             )
         )
         db.session.commit()
 
         return {"message": "Booking successful"}, 201
+
+    @login_required
+    @restaurant_required
+    def put(self): # Update Booking status
+
+        args = self.parser['put'].parse_args(strict=True)
+
+        if args["updatedStatus"] not in ("confirmed", "declined"):
+            return {"error": "Status unknown"}, 404
+
+        booking = BookingModel.query.filter_by(id=args["bookingID"]).first()
+
+        if not booking:
+            return {"error": "Booking unknown"}, 404
+        
+        booking.status = args["updatedStatus"]
+        db.session.commit()
+
+        return {"message": "Booking status updated successfully"}, 200
+
+    @login_required
+    def delete(self): # Update Booking status
+
+        args = self.parser['put'].parse_args(strict=True)
+
+        current_session = get_current_session()
+
+        booking = BookingModel.query.filter_by(id=args["bookingID"]).first()
+
+        if not booking:
+            return {"error": "Booking unknown"}, 404
+        
+        if booking.user != current_session.user:
+            return {"error": "This action exeeds your priveleges"}, 404
+
+        db.session.delete(booking)
+        db.session.commit()
+
+        return {"message": "Booking deleted successfully"}, 204
 
 api.add_resource(BookingRessource, '/api/bookings')
 
@@ -188,17 +228,68 @@ def book_table(restaurant_id):
 
     return redirect(url_for('main.index'))
 
-@main.route('/create/', methods=('GET', 'POST'))
-def create():
-    if request.method == 'POST':
-        name = request.form['name']
-        category = request.form['category']
-        address = request.form['address']
-        description = request.form['description']
-        restaurant = RestaurantModel(name=name,
-                            category=category,
-                            address=address,
-                            description=description)
-        db.session.add(restaurant)
-        db.session.commit()
-    return render_template('create.html')
+@main.route('/manage')
+@login_required
+def show_bookings():
+    current_session = get_current_session()
+    #user = UserModel.query.filter_by(username=current_session.username).first()
+
+    if current_session.user.restaurant != None:
+        bookings = (
+            BookingModel.query
+                .join(TableModel)
+                .filter(TableModel.restaurant == current_session.user.restaurant)
+                .order_by(BookingModel.date)
+                .all()
+        )
+        
+        return render_template('bookings_restaurants.html', bookings=bookings)
+    else:
+        bookings = (
+            BookingModel.query
+                .join(TableModel)
+                .filter(BookingModel.user == current_session.user)
+                .order_by(BookingModel.date)
+                .all()
+        )
+        
+        return render_template('bookings_users.html', bookings=bookings)
+
+@main.route('/manage', methods=['POST'])
+@login_required
+def update_booking():
+    method = request.form['_method']
+    bookingID = request.form['booking_id']
+
+    if method == 'post':
+        updatedStatus = request.form['updated_status']
+
+        put_response = requests.put(
+            url=request.url_root+'api/bookings',
+            json={
+                "bookingID": bookingID,
+                "updatedStatus": updatedStatus,
+            },
+            cookies=request.cookies,
+        )
+
+        if put_response.status_code != 200:
+            return render_template('error.html', status_code=put_response.status_code, error=put_response.json()["error"]), 500
+
+        flash(f"Status of Booking {bookingID} successfully changed to {updatedStatus}")
+
+    elif method == 'delete':
+        put_response = requests.delete(
+            url=request.url_root+'api/bookings',
+            json={
+                "bookingID": bookingID,
+            },
+            cookies=request.cookies,
+        )
+
+        if put_response.status_code != 204:
+            return render_template('error.html', status_code=put_response.status_code, error=put_response.json()["error"]), 500
+
+        flash(f"Booking deleted successfully")
+
+    return redirect('/manage')
