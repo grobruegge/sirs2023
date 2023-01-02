@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_restful import Resource, reqparse
 from .models import RestaurantModel, BookingModel, TableModel, UserModel
 from .auth import get_current_session, login_required, restaurant_required
-from . import db, api
-import datetime, requests
+from . import db, api, basedir
+import datetime, requests, os
 
 main = Blueprint('main', __name__)
 
@@ -45,7 +45,7 @@ def validate_date(date: str) -> datetime.date:
             raise ValueError("Incorrect date format, should be YYYY-MM-DD")
             #return {"error": "Incorrect date format, should be YYYY-MM-DD"}, 400
 
-def get_free_tableIDs(date: datetime.date) -> list[int]:
+def get_free_tableIDs(date: datetime.date) -> list:
     # Get all the bookings on that date
     bookings = BookingModel.query.filter_by(date=date).all()
 
@@ -198,7 +198,8 @@ def show_restaurant(restaurant_id):
             "restaurantID": restaurant.id,
             "date": date,
         },
-        cookies=request.cookies
+        cookies=request.cookies,
+        verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
     )
 
     if get_response.status_code != 200:
@@ -271,6 +272,7 @@ def update_booking():
                 "updatedStatus": updatedStatus,
             },
             cookies=request.cookies,
+            verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
         )
 
         if put_response.status_code != 200:
@@ -285,6 +287,7 @@ def update_booking():
                 "bookingID": bookingID,
             },
             cookies=request.cookies,
+            verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
         )
 
         if put_response.status_code != 204:
