@@ -203,7 +203,7 @@ def show_restaurant(restaurant_id):
     )
 
     if get_response.status_code != 200:
-        return render_template('error.html', status_code=get_response.status_code, error=get_response.json()["error"]), 500
+        return render_template('error.html', status_code=get_response.status_code, error=get_response.json().get("error", get_response.json().get("syserror"))), 500
 
     tables = TableModel.query.filter(TableModel.id.in_([available_tables["id"] for available_tables in get_response.json()])).all()
 
@@ -221,11 +221,12 @@ def book_table(restaurant_id):
             "tableID": tableID,
             "date": date,
         },
-        cookies=request.cookies
+        cookies=request.cookies,
+        verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
     )
 
     if post_response.status_code != 201:
-        return render_template('error.html', status_code=post_response.status_code, error=post_response.json()["error"]), 500
+        return render_template('error.html', status_code=post_response.status_code, error=post_response.json().get("error", post_response.json().get("syserror"))), 500
 
     return redirect(url_for('main.index'))
 
@@ -276,7 +277,7 @@ def update_booking():
         )
 
         if put_response.status_code != 200:
-            return render_template('error.html', status_code=put_response.status_code, error=put_response.json()["error"]), 500
+            return render_template('error.html', status_code=put_response.status_code, error=put_response.json().get("error", put_response.json().get("syserror"))), 500
 
         flash(f"Status of Booking {bookingID} successfully changed to {updatedStatus}")
 
@@ -291,7 +292,7 @@ def update_booking():
         )
 
         if put_response.status_code != 204:
-            return render_template('error.html', status_code=put_response.status_code, error=put_response.json()["error"]), 500
+            return render_template('error.html', status_code=put_response.status_code, error=put_response.json().get("error", put_response.json().get("syserror"))), 500
 
         flash(f"Booking deleted successfully")
 

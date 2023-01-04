@@ -1,22 +1,22 @@
-import flask
+from flask import Flask, redirect, url_for, __version__
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 import os, hashlib, base64, datetime, traceback, logging
-print(f"Using Flask-Version {flask.__version__}")
+print(f"Using Flask-Version {__version__}")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 db = SQLAlchemy()
 api = Api()
-app = flask.Flask(__name__)
+app = Flask(__name__)
 
 @app.errorhandler(Exception)
 def handle_error(e):
     if app.debug:
         print(traceback.format_exc())
-        return {'error': repr(e)}, 500
+        return {'syserror': repr(e)}, 500
     else:
-        return {'error': 'It seems like something went wrong. Please contact the admin.'}, 500
+        return {'syserror': 'It seems like something went wrong. Please contact the admin.'}, 500
 
 def create_app():
 
