@@ -92,11 +92,14 @@ class BookingRessource(Resource):
 
         return [table.to_dict() for table in tables], 200
 
-    @login_required
+    #@login_required
     def post(self): # Add new booking
         args = self.parser['post'].parse_args(strict=True)
 
         current_session = get_current_session()
+
+        if current_session.user is None:
+            return {"error": "Unauthorized access"}, 401
 
         table = TableModel.query.filter_by(id=args["tableID"]).first()
 
@@ -119,11 +122,18 @@ class BookingRessource(Resource):
 
         return {"message": "Booking successful"}, 201
 
-    @login_required
-    @restaurant_required
+    #@login_required
+    #@restaurant_required
     def put(self): # Update Booking status
-
         args = self.parser['put'].parse_args(strict=True)
+
+        current_session = get_current_session()
+
+        if current_session.user is None:
+            return {"error": "Unauthorized access"}, 401
+
+        if current_session.user.restaurant is None:
+            return {"error": "Unauthorized access"}, 401
 
         if args["updatedStatus"] not in ("confirmed", "declined"):
             return {"error": "Status unknown"}, 404
@@ -138,12 +148,14 @@ class BookingRessource(Resource):
 
         return {"message": "Booking status updated successfully"}, 200
 
-    @login_required
+    #@login_required
     def delete(self): # Update Booking status
-
         args = self.parser['put'].parse_args(strict=True)
 
         current_session = get_current_session()
+
+        if current_session.user is None:
+            return {"error": "Unauthorized access"}, 401
 
         booking = BookingModel.query.filter_by(id=args["bookingID"]).first()
 

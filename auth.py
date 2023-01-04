@@ -73,7 +73,7 @@ def login_required(func):
         current_session = get_current_session()
         if not current_session or current_session.user is None:
             flash("This action requires you to be logged in")
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login'), 302)
         else:
             return func(*args, **kwargs)
     return decorated_function
@@ -130,6 +130,9 @@ class LoginRessource(Resource):
 
         if not user:
             return {"error": "Username does not exist"}, 404
+
+        if current_session.challenge is None:
+            return {"error": "No open login request registered"}, 404
 
         key = base64.b64decode(user.password)
         iv = base64.b64decode(current_session.challenge)
@@ -202,7 +205,7 @@ def login_post():
     )
 
     if "error" in login_post_response.json().keys():
-        flash(login_post_response["error"])
+        flash(login_post_response.json()["error"])
         return redirect(url_for('auth.login'))
     if "syserror" in login_post_response.json().keys():
         return render_template('error.html', status_code=login_post_response.status_code, error=login_post_response.json()["syserror"]), 500
@@ -233,7 +236,7 @@ def login_post():
     )
 
     if "error" in login_put_response.json().keys():
-        flash(login_put_response['error'])
+        flash(login_put_response.json()['error'])
         return redirect(url_for('auth.login'))
     if "syserror" in login_put_response.json().keys():
         return render_template('error.html', status_code=login_put_response.status_code, error=login_put_response.json()["syserror"]), 500
@@ -272,7 +275,7 @@ def signup_post():
     )
 
     if "error" in signup_post_response.json().keys():
-        flash(signup_post_response['error'])
+        flash(signup_post_response.json()['error'])
         return redirect(url_for('auth.signup'))
     if "syserror" in signup_post_response.json().keys():
         return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json()["syserror"]), 500
