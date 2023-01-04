@@ -7,3 +7,4 @@ flask_mysqldb
 flask-marshmallow
 flask-wtf
 pycryptodome
+Flask-Limiter

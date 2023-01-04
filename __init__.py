@@ -1,7 +1,9 @@
-from flask import Flask, redirect, url_for, __version__
+from flask import Flask, render_template, __version__
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os, hashlib, base64, datetime, traceback, logging
 print(f"Using Flask-Version {__version__}")
 
@@ -10,6 +12,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 db = SQLAlchemy()
 api = Api()
 csrf = CSRFProtect()
+limiter = Limiter(
+    get_remote_address,
+    default_limits=["5 per second"],
+    storage_uri="memory://",
+)
 app = Flask(__name__)
 
 @app.errorhandler(Exception)
@@ -20,6 +27,9 @@ def handle_error(e):
     else:
         return {'syserror': 'It seems like something went wrong. Please contact the admin.'}, 500
 
+@app.errorhandler(429)
+def handle_error(e):
+    return render_template('error.html', status_code=429, error="Too many requests"), 500
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
@@ -32,6 +42,7 @@ def handle_csrf_error(e):
 def create_app():
 
     csrf.init_app(app)
+    limiter.init_app(app)
 
     # The secret key is used to cryptographically sign (not encrypt!) cookies used for storing the session data
     app.config.update(
