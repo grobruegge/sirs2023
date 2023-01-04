@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import os, hashlib, base64, datetime, traceback, logging
+import os, traceback
 print(f"Using Flask-Version {__version__}")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -77,63 +77,9 @@ def create_app():
     
     api.init_app(app)
 
-    restaurants_example_1 = models.RestaurantModel(
-        name='PizzaHut',
-        category='Pizza',
-        location='Lisbon',
-        description='Mama Mia'
-    )
-    restaurants_example_2 = models.RestaurantModel(
-        name='BurgerPlace',
-        category='Burger',
-        location='Porto',
-        description='Very cozy place'
-    )
-
-    salt = os.urandom(8)
-
-    pwd_digest = hashlib.pbkdf2_hmac(
-        hash_name='sha256', 
-        password="pwd".encode(),
-        salt=salt,
-        iterations=1000,
-    )
-
-    # Add examples to the database
-    new_user = models.UserModel(
-        username="arne", 
-        password=base64.b64encode(hashlib.sha256(pwd_digest).digest()).decode('utf-8'),
-        salt=base64.b64encode(salt).decode('utf-8'),
-        #restaurant=restaurants_example_2,
-    )
-
-    table_ex_1 = models.TableModel(
-        size=5,
-        restaurant=restaurants_example_2,
-    )
-    table_ex_2 = models.TableModel(
-        size=6,
-        restaurant=restaurants_example_2,
-    )
-
-    booking_ex_1 = models.BookingModel(
-        date=datetime.datetime.strptime("2023-01-05", "%Y-%m-%d"),
-        table=table_ex_1,
-        user=new_user,
-    )
-
-    #print(f'Restaurant: {table_ex_2.restaurant.name}')
-    #print(f'Table from Restaurant: {restaurants_example_2.tables}')
-    #print(f'Table Size: {table_ex_2.size}')
-
-    with app.app_context():
-        db.session.add(new_user)
-        db.session.add(restaurants_example_1)
-        db.session.add(restaurants_example_2)
-        db.session.add(table_ex_1)
-        db.session.add(table_ex_2)
-        db.session.add(booking_ex_1)
-        db.session.commit()
+    from .fill_db import fill_database
+    
+    fill_database()
 
     return app
 

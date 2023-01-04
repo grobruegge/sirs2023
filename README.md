@@ -90,7 +90,8 @@ $ sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 $ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 443 -j ACCEPT
 $ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 80 -j ACCEPT
-$ sudo iptables -A FORWARD -p tcp -d 192.168.2.4/24 --dport 3306 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -s 192.168.1.1 -d 192.168.2.15/24 --dport 3306 -j ACCEPT
+
 
 $ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 443 -j DNAT --to-destination 192.168.1.1
 $ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 80 -j DNAT --to-destination 192.168.1.1
@@ -132,6 +133,12 @@ $ sudo apache2ctl configtest
 $ sudo a2enmod ssl                # Activate SSL Engine
 $ sudo a2ensite thecork.conf      # Activate Website
 $ sudo systemctl reload apache2   # Reload Apache
+```
+
+* Right now, the standard setting is still configured such that it creates a local database. After configuring the Database Server as described in the next step, change the code in __init__.py in line 57-58 as follows:
+```python
+57 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db'),
+58 SQLALCHEMY_DATABASE_URI = 'mysql://arne:pwdarne0!@192.168.2.15/TheCork',
 ```
 
 * Now, you should be able to call the website in the browser of your choice (tested on Firefox) under the IP address `192.168.1.1:443` (at least if you already set up the Database Server as detailed in the next paragraph)
@@ -183,24 +190,6 @@ $ sudo /etc/init.d/mysql restart
 ```
 
 The rest (creating and querying the database) is automatically done by the SQL-Alchemy framework when running the website.
-
-### Testing
-
-Explain how to run the automated tests for this system.
-
-Give users explicit instructions on how to run all necessary tests. 
-Explain the libraries, such as JUnit, used for testing your software and supply all necessary commands.
-
-Explain what these tests test and why
-
-```
-Give an example command
-```
-
-## Demo
-
-Give a tour of the best features of the application.
-Add screenshots when relevant.
 
 ## Additional Information
 

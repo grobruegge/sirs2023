@@ -1,7 +1,7 @@
 import mysql.connector
 
 """
-Script to test database connection
+Script to test database connection from VM3 (API Server) to VM4 (Database Server)
 """
 
 mydb = mysql.connector.connect(
