@@ -9,7 +9,7 @@ TheCork also provides back-office for the restaurants which is used to manage th
 
 ### Built With
 
-*Python* is used as primary programming language. The API Server is implemented using the *Flask* web framework which is a Python module that lets you develop web applications easily. The database server is running with MySQL server and the queries are performed by *SQL-Alchemy*. 
+*Python* is used as primary programming language. The API Server is implemented using the *Flask* web framework which is a Python module that lets you develop web applications easily. The database server is running with *MySQL server* and the queries are performed by *SQL-Alchemy*. 
 
 * [Python](https://www.python.org/) - Programming Language and Platform
 * [Flask](https://flask.palletsprojects.com/en/2.2.x/) - Web Application Framework
@@ -21,21 +21,23 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Linux machine running Ubunu 20.04 or higher.
+**For Testing purposes**: One Linux machine running with Ubunu 20.04 or higher.
+
+**For Deployment**: Four seperate virtual machines running with Ubuntu 20.04 or higher
 
 ### Deployment (for testing purposes)
 
 First, execute the following two commands in you console:
 
-```
-export FLASK_APP=TheCork
-export FLASK_DEBUG=True
+```sh
+$ export FLASK_APP=TheCork
+$ export FLASK_DEBUG=True
 ```
 
 Then, navigator to the parent folder of this project and run:
 
-```
-flask run
+```bash
+$ flask run
 ```
 
 ### Deployment (for production purposes)
@@ -47,90 +49,94 @@ The following paragprah details how to set up these virtual machines
 
 * Assign the IP address 192.168.0.100 to network adapter `enps03`:
 
-```
-sudo ifconfig enp0s3 192.168.0.100/24 up
-sudo /etc/init.d/network-manager force-reload
+```bash
+$ sudo ifconfig enp0s3 192.168.0.100/24 up
+$ sudo /etc/init.d/network-manager force-reload
 ```
 
 * Set VM2 as default gateway:
 
+```bash
+$ sudo ip route add default via 192.168.0.10 
 ```
-sudo ip route add default via 192.168.0.10 
-```
+
+From this external machine, you are able to access the website which will be set up one the other virtual machines.
 
 #### **Virtual Machine 2** (Screening Router):
 
-* Assign the IP address 192.168.0.10 to network adapter `enps03`, 192.168.1.1 to `enps08` and 192.168.2.1 to `enps09`:
+* Assign the IP address 192.168.0.10 to network adapter `enps03`, 192.168.1.254 to `enps08` and 192.168.2.254 to `enps09`:
 
-```
-sudo ifconfig enp0s3 192.168.0.10/24 up
-sudo ifconfig enp0s8 192.168.0.254/24 up
-sudo ifconfig enp0s9 192.168.0.1/24 up
-sudo /etc/init.d/network-manager force-reload
+```bash
+$ sudo ifconfig enp0s3 192.168.0.10/24 up
+$ sudo ifconfig enp0s8 192.168.1.254/24 up
+$ sudo ifconfig enp0s9 192.168.2.254/24 up
+$ sudo /etc/init.d/network-manager force-reload
 ```
 
 * Activate Port Forwaring:
 
-```
-sudo sysctl net.ipv4.ip_forward=1
+```bash
+$ sudo sysctl net.ipv4.ip_forward=1
 ```
 
 * Configure the firewall with the following commands:
 
-```
+```bash
 $ sudo iptables -P INPUT DROP
 $ sudo iptables -P FORWARD DROP
 
-$ sudo iptables -A INPUT -m state --state ESTABLISHED -j ACCEPT
-$ sudo iptables -A FORWARD -m state --state ESTABLISHED -j ACCEPT
+$ sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+$ sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 $ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 443 -j ACCEPT
-$ sudo iptables -A FORWARD -p tcp -d 192.168.2.15 --dport 3306 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 80 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -d 192.168.2.4/24 --dport 3306 -j ACCEPT
 
-$ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 443 -j DNAT --to-destination 192.168.1.1:443
+$ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 443 -j DNAT --to-destination 192.168.1.1
+$ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 80 -j DNAT --to-destination 192.168.1.1
 ```
 
 #### **Virtual Machine 3** (API Server):
 
 * Assign the IP address 192.168.1.1 to network adapter `enps03`:
 
-```
-sudo ifconfig enp0s3 192.168.1.1/24 up
-sudo /etc/init.d/network-manager force-reload
+```sh
+$ sudo ifconfig enp0s3 192.168.1.1/24 up
+$ sudo /etc/init.d/network-manager force-reload
 ```
 
 * Set VM2 as default gateway:
 
-```
-sudo ip route add default via 192.168.1.254 
+```zsh
+$ sudo ip route add default via 192.168.1.254 
 ```
 
 * Install Apache2:
 
+```console
+$ sudo apt update
+$ sudo apt install apache2
 ```
-sudo apt update
-sudo apt install apache2
-```
 
-* Add [this configuration file](apache_files/webapp2.conf) to the folder `/etc/apache2/sites-available`. Within the *.conf file* you have to modify the paths to match you setup.
+* Add [this configuration file](apache_files/webapp2.conf) to the folder `/etc/apache2/sites-available`. Within the *.conf file* you have to modify the paths to match your setup.
 
-* Within the folder `var/www/` add a folder called *TheCork*. In this folder you can add the project folder and rename it to *TheCork*. Additonally, add [this file](apache_files/webapp2.wsgi) and again, modify the paths accordingly. You can verify that everything is setup correctly by running:
+* Within the folder `var/www/` add a folder called *TheCork*. In this folder you can add this project folder and rename it to *TheCork*. Additonally, add [this file](apache_files/webapp2.wsgi) and again, modify the paths accordingly. You can verify that everything is setup correctly by running:
 
-```python
-sudo apache2ctl configtest
+```bash
+$ sudo apache2ctl configtest
 ```
 
 * Activate the website by running the following command in the terminal:
 
-```python
-sudo a2enmod ssl                # Activate SSL Engine
-sudo a2ensite thecork.conf      # Activate Website
-sudo systemctl reload apache2   # Reload Apache
+```bash
+$ sudo a2enmod ssl                # Activate SSL Engine
+$ sudo a2ensite thecork.conf      # Activate Website
+$ sudo systemctl reload apache2   # Reload Apache
 ```
 
-* Now, you should be able to call the website in the browser of your choice (tested on Firefox) under the IP address `192.168.1.1:443`
+* Now, you should be able to call the website in the browser of your choice (tested on Firefox) under the IP address `192.168.1.1:443` (at least if you already set up the Database Server as detailed in the next paragraph)
 
-#### Virtual Machine 4 (Database Server):
+#### **Virtual Machine 4** (Database Server):
 
 * Assign the IP address 192.168.2.4 to network adapter `enps03`:
 
@@ -175,7 +181,8 @@ mysql> GRANT ALL PRIVILEGES ON thecork.* TO 'thecork'@'192.168.1.1';
 ```
 $ sudo /etc/init.d/mysql restart
 ```
-The rest is automatically done by the SQL-Alchemy framework when running the website.
+
+The rest (creating and querying the database) is automatically done by the SQL-Alchemy framework when running the website.
 
 ### Testing
 
