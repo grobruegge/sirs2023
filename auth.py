@@ -211,7 +211,10 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={"X-CSRF-TOKEN": csrf_token},
+        headers={
+            "X-CSRF-TOKEN": csrf_token,
+            "Referer": request.headers.get("Referer"),
+        },
     )
     if login_post_response.status_code != 200:
         if "error" in login_post_response.json():
@@ -242,7 +245,10 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={"X-CSRF-TOKEN": csrf_token},
+        headers={
+            "X-CSRF-TOKEN": csrf_token,
+            "Referer": request.headers.get("Referer"),
+        },
     )
 
     if login_put_response.status_code != 200:
@@ -283,13 +289,16 @@ def signup_post():
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={"X-CSRF-TOKEN": csrf_token},
+        headers={
+            "X-CSRF-TOKEN": csrf_token,
+            "Referer": request.headers.get("Referer"),
+        },
     )
 
     if signup_post_response.status_code != 201:
         if "error" in signup_post_response.json():
             flash(signup_post_response.json()['error'])
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.signup'))
         else:
             return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json().get("syserror", "Weird error")), 500
 

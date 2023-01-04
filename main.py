@@ -242,7 +242,10 @@ def book_table(restaurant_id):
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={"X-CSRF-TOKEN": csrf_token},
+        headers={
+            "X-CSRF-TOKEN": csrf_token,
+            "Referer": request.headers.get("Referer"),
+        },
     )
 
     if post_response.status_code != 201:
@@ -283,7 +286,7 @@ def update_booking():
     method = request.form['_method']
     bookingID = request.form['booking_id']
     csrf_token = request.form.get('csrf_token')
-    
+
     if method == 'post':
         updatedStatus = request.form['updated_status']
 
@@ -295,7 +298,10 @@ def update_booking():
             },
             cookies=request.cookies,
             verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-            headers={"X-CSRF-TOKEN": csrf_token},
+            headers={
+                "X-CSRF-TOKEN": csrf_token,
+                "Referer": request.headers.get("Referer"),
+            },
         )
 
         if put_response.status_code != 200:
@@ -311,7 +317,10 @@ def update_booking():
             },
             cookies=request.cookies,
             verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-            headers={"X-CSRF-TOKEN": csrf_token},
+            headers={
+                "X-CSRF-TOKEN": csrf_token,
+                "Referer": request.headers.get("Referer"),
+            },
         )
 
         if put_response.status_code != 204:
