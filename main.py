@@ -191,6 +191,7 @@ def show_restaurant(restaurant_id):
     restaurant = RestaurantModel.query.filter_by(id=restaurant_id).first()
 
     date = request.args.get('date')
+    csrf_token = request.args.get('csrf_token')
 
     if not date:
         date = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -216,6 +217,7 @@ def show_restaurant(restaurant_id):
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
+        headers={"X-CSRF-TOKEN": csrf_token},
     )
 
     if get_response.status_code != 200:
@@ -230,6 +232,7 @@ def show_restaurant(restaurant_id):
 def book_table(restaurant_id):
     tableID = request.form.get('table_id')
     date = request.form.get('date')
+    csrf_token = request.form.get('csrf_token')
 
     post_response = requests.post(
         url=request.url_root+'api/bookings',
@@ -239,6 +242,7 @@ def book_table(restaurant_id):
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
+        headers={"X-CSRF-TOKEN": csrf_token},
     )
 
     if post_response.status_code != 201:
@@ -278,7 +282,8 @@ def show_bookings():
 def update_booking():
     method = request.form['_method']
     bookingID = request.form['booking_id']
-
+    csrf_token = request.form.get('csrf_token')
+    
     if method == 'post':
         updatedStatus = request.form['updated_status']
 
@@ -290,6 +295,7 @@ def update_booking():
             },
             cookies=request.cookies,
             verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
+            headers={"X-CSRF-TOKEN": csrf_token},
         )
 
         if put_response.status_code != 200:
@@ -305,6 +311,7 @@ def update_booking():
             },
             cookies=request.cookies,
             verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
+            headers={"X-CSRF-TOKEN": csrf_token},
         )
 
         if put_response.status_code != 204:

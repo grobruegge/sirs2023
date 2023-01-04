@@ -201,6 +201,8 @@ def login():
 def login_post():
 
     username = request.form.get('username')
+    csrf_token = request.form.get('csrf_token')
+    print(csrf_token)
 
     login_post_response = requests.get(
         url = request.url_root + 'api/login',
@@ -209,14 +211,14 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        #verify=False
+        headers={"X-CSRF-TOKEN": csrf_token},
     )
-
-    if "error" in login_post_response.json().keys():
-        flash(login_post_response.json()["error"])
-        return redirect(url_for('auth.login'))
-    if "syserror" in login_post_response.json().keys():
-        return render_template('error.html', status_code=login_post_response.status_code, error=login_post_response.json()["syserror"]), 500
+    if login_post_response.status_code != 200:
+        if "error" in login_post_response.json():
+            flash(login_post_response.json()["error"])
+            return redirect(url_for('auth.login'))
+        else:
+            return render_template('error.html', status_code=login_post_response.status_code, error=login_post_response.json().get("syserror", "Weird error")), 500
         
     password = request.form.get('password')
 
@@ -240,14 +242,15 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        #verify=False,
+        headers={"X-CSRF-TOKEN": csrf_token},
     )
 
-    if "error" in login_put_response.json().keys():
-        flash(login_put_response.json()['error'])
-        return redirect(url_for('auth.login'))
-    if "syserror" in login_put_response.json().keys():
-        return render_template('error.html', status_code=login_put_response.status_code, error=login_put_response.json()["syserror"]), 500
+    if login_put_response.status_code != 200:
+        if "error" in login_put_response.json():
+            flash(login_put_response.json()['error'])
+            return redirect(url_for('auth.login'))
+        else:
+            return render_template('error.html', status_code=login_put_response.status_code, error=login_put_response.json().get("syserror", "Weird error")), 500
 
     return redirect(url_for('main.index'))
 
@@ -260,6 +263,7 @@ def signup_post():
 
     username = request.form.get('username')
     password = request.form.get('password')
+    csrf_token = request.form.get('csrf_token')
 
     salt = os.urandom(8)
 
@@ -279,13 +283,14 @@ def signup_post():
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-        #verify=False,
+        headers={"X-CSRF-TOKEN": csrf_token},
     )
 
-    if "error" in signup_post_response.json().keys():
-        flash(signup_post_response.json()['error'])
-        return redirect(url_for('auth.signup'))
-    if "syserror" in signup_post_response.json().keys():
-        return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json()["syserror"]), 500
+    if signup_post_response.status_code != 201:
+        if "error" in signup_post_response.json():
+            flash(signup_post_response.json()['error'])
+            return redirect(url_for('auth.login'))
+        else:
+            return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json().get("syserror", "Weird error")), 500
 
     return redirect(url_for('auth.login'))

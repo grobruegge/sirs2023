@@ -13,6 +13,7 @@
             {% endwith %}
         
             <form method="POST" action="/signup">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <input class="" name="username" placeholder="Your Username" autofocus="">
 

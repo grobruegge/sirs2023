@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for, __version__
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect, CSRFError
 import os, hashlib, base64, datetime, traceback, logging
 print(f"Using Flask-Version {__version__}")
 
@@ -8,6 +9,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 db = SQLAlchemy()
 api = Api()
+csrf = CSRFProtect()
 app = Flask(__name__)
 
 @app.errorhandler(Exception)
@@ -18,9 +20,18 @@ def handle_error(e):
     else:
         return {'syserror': 'It seems like something went wrong. Please contact the admin.'}, 500
 
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    if app.debug:
+        print(traceback.format_exc())
+        return {'syserror': e.description}, 400
+    else:
+        return {'syserror': 'It seems like something went wrong. Please contact the admin.'}, 400   
+
 def create_app():
 
-    #app.app_context().push()
+    csrf.init_app(app)
 
     # The secret key is used to cryptographically sign (not encrypt!) cookies used for storing the session data
     app.config.update(

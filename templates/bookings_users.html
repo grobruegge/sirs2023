@@ -32,6 +32,7 @@
             <td>{{ booking.status }}</td>
             <td>
               <form action="/manage" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="_method" value="delete">
                 <input type="hidden" name="booking_id" value="{{ booking.id }}">
                 <button type="submit">Delete</button>

@@ -6,6 +6,7 @@
         <form method="GET" action="/">
             <label for="location-input" class="location-search-label">Location:</label>
             <input type="text" name="location" id="location-search-input" class="location-search-input">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" class="location-search-button">Filter</button>
         </form>
     </div>

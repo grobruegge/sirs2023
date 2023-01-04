@@ -22,6 +22,7 @@
             <div class="">
                 <form action="/{{ restaurant.id }}" method="get">
                     <label for="date">Date:</label>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="date" name="date" value="{{ date }}">
                     <input type="submit" value="Show Available Tables">
                 </form>
@@ -43,6 +44,7 @@
                         </tr>
                         {% endfor %}    
                     </table>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="date" value="{{ date }}">
                     <input type="submit" value="Book Table">
                 </form>
