@@ -128,6 +128,9 @@ class LoginRessource(Resource):
 
         user = UserModel.query.filter_by(username=args["username"]).first()
 
+        if not user:
+            return {"error": "Username does not exist"}, 404
+
         key = base64.b64decode(user.password)
         iv = base64.b64decode(current_session.challenge)
 
@@ -196,23 +199,25 @@ def login_post():
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
         #verify=False
-    ).json()
+    )
 
-    if "error" in login_post_response.keys():
+    if "error" in login_post_response.json().keys():
         flash(login_post_response["error"])
         return redirect(url_for('auth.login'))
+    if "syserror" in login_post_response.json().keys():
+        return render_template('error.html', status_code=login_post_response.status_code, error=login_post_response.json()["syserror"]), 500
         
     password = request.form.get('password')
 
     pwd_digest = hashlib.pbkdf2_hmac(
         hash_name='sha256', 
         password=password.encode(),
-        salt=base64.b64decode(login_post_response["salt"]),
+        salt=base64.b64decode(login_post_response.json()["salt"]),
         iterations=1000
     )
 
     key = hashlib.sha256(pwd_digest).digest()
-    iv = base64.b64decode(login_post_response["challenge"])
+    iv = base64.b64decode(login_post_response.json()["challenge"])
 
     cipher = AES.new(key, AES.MODE_CFB, iv)
 
@@ -225,11 +230,13 @@ def login_post():
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
         #verify=False,
-    ).json()
+    )
 
-    if "error" in login_put_response.keys():
+    if "error" in login_put_response.json().keys():
         flash(login_put_response['error'])
         return redirect(url_for('auth.login'))
+    if "syserror" in login_put_response.json().keys():
+        return render_template('error.html', status_code=login_put_response.status_code, error=login_put_response.json()["syserror"]), 500
 
     return redirect(url_for('main.index'))
 
@@ -262,10 +269,12 @@ def signup_post():
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
         #verify=False,
-    ).json()
+    )
 
-    if "error" in signup_post_response.keys():
+    if "error" in signup_post_response.json().keys():
         flash(signup_post_response['error'])
         return redirect(url_for('auth.signup'))
+    if "syserror" in signup_post_response.json().keys():
+        return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json()["syserror"]), 500
 
     return redirect(url_for('auth.login'))
