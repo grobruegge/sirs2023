@@ -20,7 +20,7 @@ def handle_error(e):
 
 def create_app():
 
-    app.app_context().push()
+    #app.app_context().push()
 
     # The secret key is used to cryptographically sign (not encrypt!) cookies used for storing the session data
     app.config.update(
@@ -37,9 +37,9 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS = True,
     )
 
-    db.init_app(app)
-
     from . import models
+
+    db.init_app(app)
 
     with app.app_context():
         db.drop_all()
@@ -104,14 +104,14 @@ def create_app():
     #print(f'Table from Restaurant: {restaurants_example_2.tables}')
     #print(f'Table Size: {table_ex_2.size}')
 
-    #with app.app_context():
-    db.session.add(new_user)
-    db.session.add(restaurants_example_1)
-    db.session.add(restaurants_example_2)
-    db.session.add(table_ex_1)
-    db.session.add(table_ex_2)
-    db.session.add(booking_ex_1)
-    db.session.commit()
+    with app.app_context():
+        db.session.add(new_user)
+        db.session.add(restaurants_example_1)
+        db.session.add(restaurants_example_2)
+        db.session.add(table_ex_1)
+        db.session.add(table_ex_2)
+        db.session.add(booking_ex_1)
+        db.session.commit()
 
     return app
 
