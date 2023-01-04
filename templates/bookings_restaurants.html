@@ -45,6 +45,7 @@
             {% if booking.status != 'declined' %}
             <form action="/manage" method="POST">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="hidden" name="_method" value="post">
               <input type="hidden" name="booking_id" value="{{ booking.id }}">
               <input type="hidden" name="updated_status" value="declined">
               <button type="submit">Decline</button>

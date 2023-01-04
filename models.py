@@ -53,7 +53,7 @@ class BookingModel(db.Model):
     table = relationship('TableModel', backref='bookings')
     user_id =  db.Column(db.Integer, db.ForeignKey('users.id'))
     user = relationship('UserModel', backref='bookings')
-    status = db.Column(db.String(20), default="pendning")
+    status = db.Column(db.String(20), default="pending")
 
 
 class UserModel(db.Model):
