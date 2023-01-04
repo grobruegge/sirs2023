@@ -7,6 +7,10 @@ import datetime, requests, os
 
 main = Blueprint('main', __name__)
 
+@main.route('/error')
+def error():
+    return render_template('error.html', status_code = request.args.get("status_code"), error=request.args.get("error"))
+
 class RestaurantRessource(Resource):
     def __init__(self):
         self.parser = {

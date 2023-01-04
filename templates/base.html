@@ -7,15 +7,51 @@
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('main.index') }}">TheCork</a>
-        <a href="{{ url_for('main.update_booking') }}">Manage Bookings</a>
-        <a href="{{ url_for('main.update_booking') }}">Update information</a>
-        <a href="{{ url_for('auth.signup') }}">Sign Up</a>
-        <a href="{{ url_for('auth.login') }}">Login</a>
+        <div class="nav-left">
+            <a href="{{ url_for('main.index') }}">TheCork</a>
+        </div>  
+        <div class="nav-right">
+            <a href="{{ url_for('main.update_booking') }}">Manage Bookings</a>
+            {% with session = get_current_session() %}
+            {% if session.user is none %}
+                <a href="{{ url_for('auth.signup') }}">Sign Up </a>
+                <a href="{{ url_for('auth.login') }}">Login</a>
+            {% else %}
+                <a id="logout-link" href="#">Logout ({{ session.user.username }}) </a>
+            {% endif %}
+            {% endwith %}
+        </div>
     </nav>
     <hr>
     <div class="content">
         {% block content %} {% endblock %}
     </div>
+
+    <script>
+        // Your JavaScript code goes here
+        const logoutLink = document.querySelector("#logout-link");
+  
+        logoutLink.addEventListener("click", (event) => {
+          event.preventDefault();
+  
+          fetch("/api/login", {
+            method: "DELETE",
+          })
+            .then((response) => {
+                if (response.ok) {
+                    window.location.href = "/";
+                } else {
+                    const errorMessage = response.statusText;
+                    const statusCode = response.status;
+                    window.location.href = `/error?error=${errorMessage}&status_code=${statusCode}`;
+                }
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
+                window.location.href = `/error?error=${errorMessage}`;
+            });
+        });
+      </script>
+
 </body>
 </html>

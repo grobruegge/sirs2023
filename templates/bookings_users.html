@@ -20,6 +20,7 @@
         <tr>
           <th>Date</th>
           <th>Table Size</th>
+          <th>Status</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -28,6 +29,7 @@
           <tr>
             <td>{{ booking.date }}</td>
             <td>{{ booking.table.size }}</td>
+            <td>{{ booking.status }}</td>
             <td>
               <form action="/manage" method="POST">
                 <input type="hidden" name="_method" value="delete">

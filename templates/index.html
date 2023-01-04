@@ -2,28 +2,26 @@
 
 {% block content %}
 
-    <div>
+    <div class="location-search">
         <form method="GET" action="/">
-            <label for="location-input">Location:</label>
-            <input type="text" name="location" id="location-input">
-            <button type="submit">Filter</button>
+            <label for="location-input" class="location-search-label">Location:</label>
+            <input type="text" name="location" id="location-search-input" class="location-search-input">
+            <button type="submit" class="location-search-button">Filter</button>
         </form>
     </div>
     
     <div class="content">
         {% for restaurant in restaurants %}
             <div class="restaurant">
-                <p><b>{{ restaurant.id }}</b></p>
                 <b>
-            <p class="name">
-                <a href="{{ url_for('main.show_restaurant', restaurant_id=restaurant.id)}}">
-                    {{ restaurant.name }}
-                </a>
-            </p>
+                    <p class="name">
+                        <a href="{{ url_for('main.show_restaurant', restaurant_id=restaurant.id)}}">
+                            {{ restaurant.name }}
+                        </a>
+                    </p>
                 </b>
                 <p>{{ restaurant.category }}</p>
                 <p>{{ restaurant.location }}</p>
-                <p>Added: {{ restaurant.created_at }}</p>
                 <div class="description">
                     <h4>Description</h4>
                     <p>{{ restaurant.description }}</p>

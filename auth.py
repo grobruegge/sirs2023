@@ -131,7 +131,7 @@ class LoginRessource(Resource):
         if not user:
             return {"error": "Username does not exist"}, 404
 
-        if current_session.challenge is None:
+        if not current_session.challenge:
             return {"error": "No open login request registered"}, 404
 
         key = base64.b64decode(user.password)
@@ -148,6 +148,14 @@ class LoginRessource(Resource):
         db.session.commit()
 
         return {"message": "Login successful"}, 200
+    
+    def delete(self): # Update Session and Login User
+        current_session = get_current_session()
+        current_session.user = None
+        db.session.commit()
+
+        return {"message": "Successfully logged out of the system"}, 200
+
 
 api.add_resource(LoginRessource, '/api/login')
 
