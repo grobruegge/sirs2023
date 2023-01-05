@@ -88,9 +88,9 @@ $ sudo iptables -P FORWARD DROP
 $ sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 $ sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-$ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 443 -j ACCEPT
-$ sudo iptables -A FORWARD -p tcp -d 192.168.1.1/24 --dport 80 -j ACCEPT
-$ sudo iptables -A FORWARD -p tcp -s 192.168.1.1 -d 192.168.2.15/24 --dport 3306 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -d 192.168.1.1 --dport 443 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -d 192.168.1.1 --dport 80 -j ACCEPT
+$ sudo iptables -A FORWARD -p tcp -s 192.168.1.1 -d 192.168.2.15 --dport 3306 -j ACCEPT
 
 
 $ sudo iptables -t nat -A PREROUTING -i enps03 -p tcp --dport 443 -j DNAT --to-destination 192.168.1.1
@@ -193,7 +193,11 @@ The rest (creating and querying the database) is automatically done by the SQL-A
 
 ## Additional Information
 
+### Hashes of VMs:
+
+The hashes of the VMs have been created using `sha256sum` for the snapshots-files of kind *.vdi* and the VirtualBox files of kind *.vbox*
+
 ### Author: 
 **Arne Grobrügge** 
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/grobruegge/sirs2023/contributors) who participated in this project.
