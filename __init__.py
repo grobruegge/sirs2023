@@ -10,8 +10,10 @@ print(f"Using Flask-Version {__version__}")
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 db = SQLAlchemy()
-api = Api()
 csrf = CSRFProtect()
+api = Api(
+    decorators=[csrf.exempt]
+)
 limiter = Limiter(
     get_remote_address,
     default_limits=["5 per second"],

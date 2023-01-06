@@ -73,10 +73,12 @@ class SessionModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(255), unique=True)
     challenge = db.Column(db.Text())
+    challenge_expire_time = db.Column(db.DateTime(timezone=True))
+    session_expire_time = db.Column(db.DateTime(timezone=True))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = relationship('UserModel', backref='sessions')
 
-    def __init__(self, user_id=None, challenge=""):
+    def __init__(self, user_id=None, challenge=None):
         self.token = os.urandom(64).hex()
         self.challenge = challenge
         self.user_id = user_id

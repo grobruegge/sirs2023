@@ -1,8 +1,8 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, make_response
 from flask_restful import Resource, reqparse
-from . import app, api, db, basedir
+from . import app, api, db, basedir, csrf
 from .models import UserModel, SessionModel
-import os, requests, hashlib, json, base64
+import os, requests, hashlib, json, base64, datetime
 from functools import wraps
 from Crypto.Cipher import AES
 
@@ -36,14 +36,12 @@ def setup_session():
         except:
             json_data = {}
 
-        #response = make_response(redirect(request.path))
         req = requests.request(
             method=request.method, 
             url=request.url, 
             json=json_data,
             cookies={COOKIE_TOKEN:new_session.token},
             verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-            #verify=False,
         )
 
         response = make_response(
@@ -61,7 +59,7 @@ def setup_session():
 
     if COOKIE_TOKEN not in request.cookies:
         return add_session_and_redirect()
-        
+
     current_session = get_current_session()
 
     if current_session is None:
@@ -90,6 +88,22 @@ def restaurant_required(func):
             return func(*args, **kwargs)
     return decorated_function
 
+def clear_expired_challenges(model):
+    # Get the current time
+    current_time = datetime.datetime.now()
+
+    # Query the database for rows where the expiry date is passed
+    non_null_rows = model.query.filter(model.challenge_expire_time != None).all()
+
+    expired_rows = [r for r in non_null_rows if r.challenge_expire_time < current_time]
+
+    # Clear the value of the other column for each expired row
+    for row in expired_rows:
+        row.challenge = None
+        row.challenge_expire_time = None
+
+    db.session.commit()
+
 class LoginRessource(Resource):
     def __init__(self):
         self.parser = {
@@ -114,6 +128,7 @@ class LoginRessource(Resource):
         current_session = get_current_session()
 
         current_session.challenge = base64.b64encode(os.urandom(16)).decode('utf-8')
+        current_session.challenge_expire_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
         db.session.commit()
 
         return {
@@ -125,6 +140,7 @@ class LoginRessource(Resource):
         args = self.parser['put'].parse_args(strict=True)
 
         current_session = get_current_session()
+        clear_expired_challenges(current_session)
 
         user = UserModel.query.filter_by(username=args["username"]).first()
 
@@ -143,7 +159,8 @@ class LoginRessource(Resource):
             return {"error": "Incorrect password"}, 401
 
         # Setup the session with the current user
-        current_session.challenge = ""
+        current_session.challenge = None
+        current_session.challenge_expire_time = None
         current_session.user = user
         db.session.commit()
 
@@ -201,8 +218,6 @@ def login():
 def login_post():
 
     username = request.form.get('username')
-    csrf_token = request.form.get('csrf_token')
-    print(csrf_token)
 
     login_post_response = requests.get(
         url = request.url_root + 'api/login',
@@ -211,11 +226,8 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={
-            "X-CSRF-TOKEN": csrf_token,
-            "Referer": request.headers.get("Referer"),
-        },
     )
+
     if login_post_response.status_code != 200:
         if "error" in login_post_response.json():
             flash(login_post_response.json()["error"])
@@ -245,10 +257,6 @@ def login_post():
         },
         cookies = request.cookies,
         verify = os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={
-            "X-CSRF-TOKEN": csrf_token,
-            "Referer": request.headers.get("Referer"),
-        },
     )
 
     if login_put_response.status_code != 200:
@@ -269,7 +277,6 @@ def signup_post():
 
     username = request.form.get('username')
     password = request.form.get('password')
-    csrf_token = request.form.get('csrf_token')
 
     salt = os.urandom(8)
 
@@ -289,10 +296,6 @@ def signup_post():
         },
         cookies=request.cookies,
         verify=os.path.join(basedir, 'certificates', 'cert1.pem'),
-        headers={
-            "X-CSRF-TOKEN": csrf_token,
-            "Referer": request.headers.get("Referer"),
-        },
     )
 
     if signup_post_response.status_code != 201:
