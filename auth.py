@@ -9,24 +9,21 @@ from Crypto.Cipher import AES
 auth = Blueprint('auth', __name__)
 
 COOKIE_TOKEN = "TOKEN"
+logging.basicConfig(filename=os.path.join(basedir, 'output.log'), level=logging.DEBUG)
 
 # For Presentations
 def log_request_response(response):
-    original_stdout = sys.stdout
     request = response.request
-    with open(os.path.join(basedir, 'output.log'), 'w') as f:
-        sys.stdout = f
-        print("\n\nREQUEST")
-        print(f"Method: {request.method}")
-        print(f"URL: {request.url}")
-        print(f"Headers: {json.dumps(dict(request.headers), indent=4)}")
-        print(f"Data: {json.dumps(json.loads(request.body.decode('utf-8')), indent=4)}")
-        print("\n\nRESPONSE")
-        print(f"Status code: {response.status_code}")
-        print(f"URL: {response.url}")
-        print(f"Headers: {json.dumps(dict(response.headers), indent=4)}")
-        print(f"Data: {response.text}")
-    sys.stdout = original_stdout 
+    logging.debug("\n\nREQUEST")
+    logging.debug(f"Method: {request.method}")
+    logging.debug(f"URL: {request.url}")
+    logging.debug(f"Headers: {json.dumps(dict(request.headers), indent=4)}")
+    logging.debug(f"Data: {json.dumps(json.loads(request.body.decode('utf-8')), indent=4)}")
+    logging.debug("\n\nRESPONSE")
+    logging.debug(f"Status code: {response.status_code}")
+    logging.debug(f"URL: {response.url}")
+    logging.debug(f"Headers: {json.dumps(dict(response.headers), indent=4)}")
+    logging.debug(f"Data: {response.text}")
 
 def get_current_session(token=None):
     if not token:
