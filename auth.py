@@ -1,14 +1,29 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, make_response
 from flask_restful import Resource, reqparse
-from . import app, api, db, basedir, csrf
+from . import app, api, db, basedir
 from .models import UserModel, SessionModel
-import os, requests, hashlib, json, base64, datetime
+import sys, os, requests, hashlib, json, base64, datetime, logging
 from functools import wraps
 from Crypto.Cipher import AES
 
 auth = Blueprint('auth', __name__)
 
 COOKIE_TOKEN = "TOKEN"
+logging.basicConfig(filename=os.path.join(basedir, 'output.log'), level=logging.INFO)
+
+# For Presentations
+def log_request_response(response):
+    request = response.request
+    logging.info("\n\nREQUEST")
+    logging.info(f"Method: {request.method}")
+    logging.info(f"URL: {request.url}")
+    logging.info(f"Headers: {json.dumps(dict(request.headers), indent=4)}")
+    logging.info(f"Data: {json.dumps(json.loads(request.body.decode('utf-8')), indent=4)}")
+    logging.info("\n\nRESPONSE")
+    logging.info(f"Status code: {response.status_code}")
+    logging.info(f"URL: {response.url}")
+    logging.info(f"Headers: {json.dumps(dict(response.headers), indent=4)}")
+    logging.info(f"Data: {response.text}")
 
 def get_current_session(token=None):
     if not token:
@@ -234,7 +249,10 @@ def login_post():
             return redirect(url_for('auth.login'))
         else:
             return render_template('error.html', status_code=login_post_response.status_code, error=login_post_response.json().get("syserror", "Weird error")), 500
-        
+    
+    # For presentation
+    log_request_response(login_post_response)
+
     password = request.form.get('password')
 
     pwd_digest = hashlib.pbkdf2_hmac(
@@ -265,6 +283,9 @@ def login_post():
             return redirect(url_for('auth.login'))
         else:
             return render_template('error.html', status_code=login_put_response.status_code, error=login_put_response.json().get("syserror", "Weird error")), 500
+
+    # For presentation
+    log_request_response(login_put_response)
 
     return redirect(url_for('main.index'))
 
@@ -304,5 +325,8 @@ def signup_post():
             return redirect(url_for('auth.signup'))
         else:
             return render_template('error.html', status_code=signup_post_response.status_code, error=signup_post_response.json().get("syserror", "Weird error")), 500
+    
+    # For presentation
+    log_request_response(signup_post_response)
 
     return redirect(url_for('auth.login'))
