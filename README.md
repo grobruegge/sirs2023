@@ -7,6 +7,10 @@ Restaurant reservation made easy with *TheCork*!
 Customers can display a list of restaurants available at their location and are able to book a table for a specific number of people if the restaurant still has free tables. 
 TheCork also provides back-office for the restaurants which is used to manage the schedule and to approve or deny the customers reservations.
 
+The focus lies upon implementing a custom protocol for an authentication server. The protocol is based on MS-CHAPv2 and looks as follows:
+
+![Network Overview](./protocol_details.png)
+
 ### Built With
 
 *Python* is used as primary programming language. The API Server is implemented using the *Flask* web framework which is a Python module that lets you develop web applications easily. The database server is running with *MySQL server* and the queries are performed by *SQL-Alchemy*. 
@@ -14,6 +18,8 @@ TheCork also provides back-office for the restaurants which is used to manage th
 * [Python](https://www.python.org/) - Programming Language and Platform
 * [Flask](https://flask.palletsprojects.com/en/2.2.x/) - Web Application Framework
 * [SQLAlchemy](https://www.sqlalchemy.org/) - Database Management Framwork
+
+![Network Overview](./network_overview.png)
 
 ## Getting Started
 
